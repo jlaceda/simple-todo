@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+	<meta charset="UTF-8">
+	<title>To Do App!</title>
+	<style>
+	#todo-item {
+		font-weight: 700;
+		font-size: 2em;
+	}
+	</style>
+</head>
+<body>
+	<h1>To Do App!</h1>
+	<form>
+		<span id="todo-item">To Do Item: <input id="to-do" type="text" ><input id="add-to-do" value="Add Item" type="submit"></span>
+	</form>
+	<hr>
+	<div id="to-dos"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+	/*
+		todos = [
+		{
+			todo: "first",
+			id: 1,
+		},
+		{
+			todo: "second",
+			id: 2,
+		}]
+	*/
+	// Init global todos array from localStorage
+	if (localStorage.getItem("todos") === null)
+	{
+		localStorage.setItem("todos","[]");
+	}
+	let todos = JSON.parse(localStorage.getItem("todos"));
+	// creates todo elements in DOM from todos array
+	function renderTodos()
+	{
+		$("#to-dos").empty();
+		for (let i = 0; i < todos.length; i++)
+		{
+			const todoVal = todos[i].todo;
+			const todoId = todos[i].id;
+			// Create a new variable that will hold a "<p>" tag.
+			let todoItem = $("<p>")
+				.text(todoVal)
+				// Then give it an ID in the following form:
+				// "item-4" or "item-3" or "item-99", where the number is equal to toDoCount.
+				// Then set the to-do "value" as text to this <p> element.
+				.attr("id","item-"+todoId)
+			// Create a button with unique identifiers based on what number it is in the list. Again use jQuery to do this.
+			// Give your button a data attribute called data-to-do and a class called "checkbox".
+			// Lastly add the letter X inside.
+			let removeButton = $("<button>")
+				.attr("data-to-do",todoId)
+				.addClass("checkbox")
+				.text("X")
+			// Append the button to the to do item
+			todoItem.prepend(removeButton);
+			// Add the button and toDoItem to the to-dos div
+			$("#to-dos").append(todoItem);
+		}
+	}
+	// add a todo object in todos array
+	// write to localstorage immediately after
+	function addTodo(todoVal)
+	{
+		// generate id
+		let todoId = 0;
+		const arrayOfExistingIds = [];
+		for (let i = 0; i < todos.length; i++)
+		{
+			arrayOfExistingIds.push(parseInt(todos[i].id));
+		}
+		while (arrayOfExistingIds.indexOf(todoId) !== -1)
+		{
+			todoId++;
+		}
+		todos.push({
+			todo: todoVal,
+			id: todoId,
+		});
+		// save
+		localStorage.setItem("todos",JSON.stringify(todos));
+	}
+	function removeTodo(todoId)
+	{
+		for (let i = 0; i < todos.length; i++)
+		{
+			if (todoId == todos[i].id)
+			{
+				todos.splice(i, 1);
+				break;
+			}
+		}
+		// save
+		localStorage.setItem("todos",JSON.stringify(todos));
+	}
+	//  On Click event associated with the add-to-do function
+	$("#add-to-do").on("click", function(event) {
+		// prevent form from submitting
+		event.preventDefault();
+
+		// Get the to-do "value" from the textbox and store it a variable
+		const todoVal = $("#to-do").val();
+
+		addTodo(todoVal);
+		// Clear the textbox when done
+		$("#to-do").val("");
+		renderTodos();
+	});
+	//  When a user clicks a check box then delete the specific content
+	//  (NOTE: Pay attention to the unusual syntax here for the click event.
+	//  Because we are creating click events on "dynamic" content, we can't just use the usual "on" "click" syntax.)
+	$(document.body).on("click", ".checkbox", function()
+	{
+		// Get the number of the button from its data attribute and hold in a variable called  toDoNumber.
+		const todoId = $(this).attr("data-to-do");
+		// Select and Empty the specific <p> element that previously held the to do item number.
+		$("#item-"+todoId).empty();
+		// remove from todos array
+		removeTodo(todoId);
+	});
+	$(document).ready(function()
+	{
+		renderTodos();
+	});
+	</script>
+</body>
+</html>
